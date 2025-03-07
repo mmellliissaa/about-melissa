@@ -38,37 +38,59 @@
 //   $contact->add_message( $_POST['message'], 'Message', 10);
 
 //   echo $contact->send();
+//?>
 
 
+<?php
+// Include the PHPMailer library
+require_once 'libs/phpmailer/Exception.php';
+require_once 'libs/phpmailer/PHPMailer.php';
+require_once 'libs/phpmailer/SMTP.php';
+
+// Use the PHPMailer classes
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
-require 'vendor/autoload.php';
+// Check if form is submitted
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
-$mail = new PHPMailer(true);
-try {
-    //Server settings
-    $mail->isSMTP();
-    $mail->Host = 'smtp.example.com';  // Set the SMTP server to send through
-    $mail->SMTPAuth = true;
-    $mail->Username = 'your_email@example.com';  // SMTP username
-    $mail->Password = 'your_email_password';    // SMTP password
-    $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-    $mail->Port = 587;
+    // Get form data
+    $name = $_POST['name'];
+    $email = $_POST['email'];
+    $subject = $_POST['subject'];
+    $message = $_POST['message'];
 
-    //Recipients
-    $mail->setFrom('from_email@example.com', 'Mailer');
-    $mail->addAddress('recipient@example.com', 'Joe User');  // Add a recipient
+    // Create a new PHPMailer instance
+    $mail = new PHPMailer(true);
+    
+    try {
+        // Set mailer to use SMTP
+        $mail->isSMTP();
+        $mail->Host = 'smtp.example.com'; // Set SMTP server (e.g., Gmail or custom SMTP)
+        $mail->SMTPAuth = true;
+        $mail->Username = 'your_email@example.com'; // SMTP username
+        $mail->Password = 'your_password'; // SMTP password
+        $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+        $mail->Port = 587; // Typically 587 for TLS
 
-    // Content
-    $mail->isHTML(true);
-    $mail->Subject = 'Here is the subject';
-    $mail->Body    = 'This is the HTML message body <b>in bold!</b>';
-    $mail->AltBody = 'This is the body in plain text for non-HTML mail clients';
+        // Set the sender and recipient
+        $mail->setFrom($email, $name); // From email and name
+        $mail->addAddress('recipient@example.com', 'Your Name'); // To email (your email)
 
-    $mail->send();
-    echo 'Message has been sent';
-} catch (Exception $e) {
-    echo "Message could not be sent. Mailer Error: {$mail->ErrorInfo}";
+        // Set email subject and body
+        $mail->Subject = $subject;
+        $mail->Body    = "Name: $name\nEmail: $email\nMessage: $message";
+        $mail->AltBody = "Name: $name\nEmail: $email\nMessage: $message"; // For email clients that don't support HTML
+
+        // Send the email
+        if ($mail->send()) {
+            echo 'Message has been sent';
+        } else {
+            echo 'Message could not be sent.';
+        }
+    } catch (Exception $e) {
+        echo "Message could not be sent. Mailer Error: {$mail->ErrorInfo}";
+    }
 }
 ?>
+
